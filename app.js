@@ -3,6 +3,8 @@ const fs = require("fs");
 
 const app = express();
 
+app.use(express.json());
+
 // // route setting
 // app.get("/", (req, res) => {
 //   // response with plain text
@@ -16,7 +18,7 @@ const app = express();
 // });
 
 const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours.json`),
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
 );
 
 app.get("/api/v1/", (req, res) => {
@@ -27,6 +29,27 @@ app.get("/api/v1/", (req, res) => {
       tours,
     },
   });
+});
+
+app.post("/api/v1/", (req, res) => {
+  const lastId = tours[tours.length - 1].id;
+  const newId = lastId + 1;
+  const newTour = Object.assign({ id: newId }, req.body);
+
+  tours.push(newTour);
+
+  fs.writeFile(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(tours),
+    (err) => {
+      res.status(201).json({
+        status: "success",
+        data: {
+          tours: newTour,
+        },
+      });
+    },
+  );
 });
 
 // server basic setting
